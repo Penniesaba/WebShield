@@ -91,6 +91,9 @@ def init_app(app):
                 report_generator = VulnerabilityReportGenerator(scan_id, target_url, vulnerabilities)
                 report_path = report_generator.generate_report()
                 
+                # 计算风险评分和分类
+                risk_score = report_generator._calculate_risk_score()
+                
                 # 更新扫描状态
                 scan_info.update({
                     'status': 'completed',
@@ -98,7 +101,13 @@ def init_app(app):
                     'progress': 100,
                     'urls_discovered': len(urls),
                     'vulnerabilities_found': len(vulnerabilities),
-                    'report_path': report_path
+                    'vulnerabilities': vulnerabilities,
+                    'report_path': report_path,
+                    'score': risk_score['score'],
+                    'risk_level': risk_score['level'],
+                    'total_vulnerabilities': risk_score['total_vulnerabilities'],
+                    'vulnerability_counts': risk_score['vulnerability_counts'],
+                    'risk_counts': risk_score['risk_counts']
                 })
                 
                 # 保存最终结果
@@ -133,6 +142,44 @@ def init_app(app):
         
         with open(result_path, 'r', encoding='utf-8') as f:
             scan_info = json.load(f)
+        
+        # 确保所有必要的字段存在，防止模板渲染时出错
+        if scan_info.get('status') == 'completed':
+            # 风险评分相关字段
+            if 'risk_counts' not in scan_info:
+                scan_info['risk_counts'] = {'high': 0, 'medium': 0, 'low': 0}
+            elif not isinstance(scan_info['risk_counts'], dict):
+                scan_info['risk_counts'] = {'high': 0, 'medium': 0, 'low': 0}
+            else:
+                # 确保risk_counts中包含所有必要的子字段
+                for key in ['high', 'medium', 'low']:
+                    if key not in scan_info['risk_counts']:
+                        scan_info['risk_counts'][key] = 0
+            
+            # 漏洞计数相关字段
+            if 'vulnerability_counts' not in scan_info:
+                scan_info['vulnerability_counts'] = {'sql_injection': 0, 'xss': 0, 'csrf': 0, 'other': 0}
+            elif not isinstance(scan_info['vulnerability_counts'], dict):
+                scan_info['vulnerability_counts'] = {'sql_injection': 0, 'xss': 0, 'csrf': 0, 'other': 0}
+            else:
+                # 确保vulnerability_counts中包含所有必要的子字段
+                for key in ['sql_injection', 'xss', 'csrf', 'other']:
+                    if key not in scan_info['vulnerability_counts']:
+                        scan_info['vulnerability_counts'][key] = 0
+            
+            # 其他必要字段
+            if 'total_vulnerabilities' not in scan_info:
+                vulns = scan_info.get('vulnerabilities', [])
+                scan_info['total_vulnerabilities'] = len(vulns) if isinstance(vulns, list) else 0
+            
+            if 'score' not in scan_info:
+                scan_info['score'] = 0
+                
+            if 'risk_level' not in scan_info:
+                scan_info['risk_level'] = 'Safe'
+            
+            if 'urls_discovered' not in scan_info:
+                scan_info['urls_discovered'] = 0
         
         return render_template('scan_result.html', scan_info=scan_info)
     

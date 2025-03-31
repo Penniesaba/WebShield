@@ -196,25 +196,25 @@
     {% elif scan_info.status == 'completed' %}
         <div class="score-container">
             {% if scan_info.risk_level == 'Critical' %}
-                <div class="score score-critical">{{ scan_info.score|round }}</div>
+                <div class="score score-critical">{{ scan_info.score|default(0)|round }}</div>
                 <div>
                     <h4 class="mb-1">危险等级: 严重风险</h4>
                     <p class="mb-0 text-muted">发现多个严重安全漏洞，建议立即修复</p>
                 </div>
             {% elif scan_info.risk_level == 'High' %}
-                <div class="score score-high">{{ scan_info.score|round }}</div>
+                <div class="score score-high">{{ scan_info.score|default(0)|round }}</div>
                 <div>
                     <h4 class="mb-1">危险等级: 高风险</h4>
                     <p class="mb-0 text-muted">发现重要安全漏洞，需要优先修复</p>
                 </div>
             {% elif scan_info.risk_level == 'Medium' %}
-                <div class="score score-medium">{{ scan_info.score|round }}</div>
+                <div class="score score-medium">{{ scan_info.score|default(0)|round }}</div>
                 <div>
                     <h4 class="mb-1">危险等级: 中等风险</h4>
                     <p class="mb-0 text-muted">发现一些安全漏洞，建议及时修复</p>
                 </div>
             {% elif scan_info.risk_level == 'Low' %}
-                <div class="score score-low">{{ scan_info.score|round }}</div>
+                <div class="score score-low">{{ scan_info.score|default(0)|round }}</div>
                 <div>
                     <h4 class="mb-1">危险等级: 低风险</h4>
                     <p class="mb-0 text-muted">发现少量低风险问题，建议关注</p>
@@ -236,25 +236,32 @@
             <i class="bi bi-bar-chart-line me-2"></i> 扫描摘要
         </div>
         <div class="card-body">
+            <div class="score-metrics">
+                <h3>安全风险等级: {% if scan_info.risk_level %}{{ scan_info.risk_level|replace('Critical', '严重风险')|replace('High', '高风险')|replace('Medium', '中等风险')|replace('Low', '低风险')|replace('Safe', '安全') }}{% else %}未知{% endif %}</h3>
+                <p>总体风险评分: {% if scan_info.score %}{{ scan_info.score|round(1) }}{% else %}0{% endif %}/100</p>
+                <p>发现漏洞数量: {{ scan_info.total_vulnerabilities|default(0) }}</p>
+                <p>高危漏洞: {{ scan_info.risk_counts.high|default(0) }} | 中危漏洞: {{ scan_info.risk_counts.medium|default(0) }} | 低危漏洞: {{ scan_info.risk_counts.low|default(0) }}</p>
+            </div>
+            
             <div class="stats-container">
                 <div class="stat-box">
-                    <div class="stat-number text-danger">{{ scan_info.risk_counts.high }}</div>
+                    <div class="stat-number text-danger">{{ scan_info.risk_counts.high|default(0) }}</div>
                     <div>高危漏洞</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number text-warning">{{ scan_info.risk_counts.medium }}</div>
+                    <div class="stat-number text-warning">{{ scan_info.risk_counts.medium|default(0) }}</div>
                     <div>中危漏洞</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number text-info">{{ scan_info.risk_counts.low }}</div>
+                    <div class="stat-number text-info">{{ scan_info.risk_counts.low|default(0) }}</div>
                     <div>低危漏洞</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">{{ scan_info.urls_discovered }}</div>
+                    <div class="stat-number">{{ scan_info.urls_discovered|default(0) }}</div>
                     <div>发现URL</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">{{ scan_info.total_vulnerabilities }}</div>
+                    <div class="stat-number">{{ scan_info.total_vulnerabilities|default(0) }}</div>
                     <div>漏洞总数</div>
                 </div>
             </div>
@@ -265,19 +272,19 @@
                     <div class="list-group">
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             SQL注入漏洞
-                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.sql_injection }}</span>
+                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.sql_injection|default(0) }}</span>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             XSS跨站脚本漏洞
-                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.xss }}</span>
+                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.xss|default(0) }}</span>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             CSRF跨站请求伪造漏洞
-                            <span class="badge bg-warning rounded-pill">{{ scan_info.vulnerability_counts.csrf }}</span>
+                            <span class="badge bg-warning rounded-pill">{{ scan_info.vulnerability_counts.csrf|default(0) }}</span>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             其他漏洞
-                            <span class="badge bg-info rounded-pill">{{ scan_info.vulnerability_counts.other }}</span>
+                            <span class="badge bg-info rounded-pill">{{ scan_info.vulnerability_counts.other|default(0) }}</span>
                         </div>
                     </div>
                 </div>
@@ -373,11 +380,6 @@
                     </div>
                 </div>
             {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <span>恭喜！未发现明显的安全漏洞。但安全是持续的过程，建议定期进行安全扫描。</span>
         </div>
     {% endif %}
 {% endif %}
