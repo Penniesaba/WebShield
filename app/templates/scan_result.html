@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+
+{% block title %}扫描结果 - WebShield{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 5px solid #3498db;
+    }
+    .score-container {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .score {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        margin-right: 20px;
+    }
+    .score-critical {
+        background-color: #d9534f;
+    }
+    .score-high {
+        background-color: #f0ad4e;
+    }
+    .score-medium {
+        background-color: #5bc0de;
+    }
+    .score-low, .score-safe {
+        background-color: #5cb85c;
+    }
+    .stats-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 20px 0;
+    }
+    .stat-box {
+        flex: 1;
+        min-width: 150px;
+        background-color: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .vuln-badge {
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    .risk-high {
+        background-color: #ffe0e0;
+        color: #d9534f;
+    }
+    .risk-medium {
+        background-color: #fff4e0;
+        color: #f0ad4e;
+    }
+    .risk-low {
+        background-color: #e0f4ff;
+        color: #5bc0de;
+    }
+    .vuln-list {
+        margin-top: 30px;
+    }
+    .vuln-card {
+        margin-bottom: 15px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .vuln-card.high {
+        border-left: 5px solid #d9534f;
+    }
+    .vuln-card.medium {
+        border-left: 5px solid #f0ad4e;
+    }
+    .vuln-card.low {
+        border-left: 5px solid #5bc0de;
+    }
+    .vuln-header {
+        cursor: pointer;
+        padding: 15px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .vuln-body {
+        padding: 15px;
+        display: none;
+    }
+    .vuln-body.show {
+        display: block;
+    }
+    .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        margin: 30px auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .status-running {
+        color: #3498db;
+    }
+    .status-completed {
+        color: #5cb85c;
+    }
+    .status-failed {
+        color: #d9534f;
+    }
+    .progress-container {
+        height: 30px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        position: relative;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+    .progress-bar {
+        position: absolute;
+        height: 100%;
+        background-color: #3498db;
+        width: 0%;
+        transition: width 0.5s ease-in-out;
+    }
+    .progress-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        line-height: 30px;
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">扫描结果</h2>
+        {% if scan_info.status == 'completed' %}
+            <a href="/reports/{{ scan_info.id }}" class="btn btn-primary">
+                <i class="bi bi-download me-2"></i> 下载报告
+            </a>
+        {% endif %}
+    </div>
+    <p class="text-muted mt-2">目标: {{ scan_info.target_url }}</p>
+    
+    {% if scan_info.status == 'running' %}
+        <div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <span>扫描正在进行中，请稍后刷新页面查看结果。</span>
+        </div>
+        <div class="text-center">
+            <div class="loader"></div>
+            <p class="status-running">
+                <i class="bi bi-arrow-repeat me-2"></i>
+                正在扫描...
+            </p>
+            
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ scan_info.progress }}%;"></div>
+                <div class="progress-text">{{ scan_info.progress }}%</div>
+            </div>
+        </div>
+    {% elif scan_info.status == 'failed' %}
+        <div class="alert alert-danger mt-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>扫描过程中发生错误:</span>
+            <p class="mb-0 mt-2">{{ scan_info.error }}</p>
+        </div>
+    {% elif scan_info.status == 'completed' %}
+        <div class="score-container">
+            {% if scan_info.risk_level == 'Critical' %}
+                <div class="score score-critical">{{ scan_info.score|round }}</div>
+                <div>
+                    <h4 class="mb-1">危险等级: 严重风险</h4>
+                    <p class="mb-0 text-muted">发现多个严重安全漏洞，建议立即修复</p>
+                </div>
+            {% elif scan_info.risk_level == 'High' %}
+                <div class="score score-high">{{ scan_info.score|round }}</div>
+                <div>
+                    <h4 class="mb-1">危险等级: 高风险</h4>
+                    <p class="mb-0 text-muted">发现重要安全漏洞，需要优先修复</p>
+                </div>
+            {% elif scan_info.risk_level == 'Medium' %}
+                <div class="score score-medium">{{ scan_info.score|round }}</div>
+                <div>
+                    <h4 class="mb-1">危险等级: 中等风险</h4>
+                    <p class="mb-0 text-muted">发现一些安全漏洞，建议及时修复</p>
+                </div>
+            {% elif scan_info.risk_level == 'Low' %}
+                <div class="score score-low">{{ scan_info.score|round }}</div>
+                <div>
+                    <h4 class="mb-1">危险等级: 低风险</h4>
+                    <p class="mb-0 text-muted">发现少量低风险问题，建议关注</p>
+                </div>
+            {% else %}
+                <div class="score score-safe">100</div>
+                <div>
+                    <h4 class="mb-1">危险等级: 安全</h4>
+                    <p class="mb-0 text-muted">未发现明显安全漏洞</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+{% if scan_info.status == 'completed' %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-bar-chart-line me-2"></i> 扫描摘要
+        </div>
+        <div class="card-body">
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number text-danger">{{ scan_info.risk_counts.high }}</div>
+                    <div>高危漏洞</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-warning">{{ scan_info.risk_counts.medium }}</div>
+                    <div>中危漏洞</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number text-info">{{ scan_info.risk_counts.low }}</div>
+                    <div>低危漏洞</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ scan_info.urls_discovered }}</div>
+                    <div>发现URL</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ scan_info.total_vulnerabilities }}</div>
+                    <div>漏洞总数</div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5>漏洞类型分布</h5>
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            SQL注入漏洞
+                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.sql_injection }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            XSS跨站脚本漏洞
+                            <span class="badge bg-danger rounded-pill">{{ scan_info.vulnerability_counts.xss }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            CSRF跨站请求伪造漏洞
+                            <span class="badge bg-warning rounded-pill">{{ scan_info.vulnerability_counts.csrf }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            其他漏洞
+                            <span class="badge bg-info rounded-pill">{{ scan_info.vulnerability_counts.other }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>扫描信息</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>扫描ID:</strong> {{ scan_info.id[:8] }}...
+                        </li>
+                        <li class="list-group-item">
+                            <strong>开始时间:</strong> {{ scan_info.start_time|replace('T', ' ') }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>完成时间:</strong> {{ scan_info.end_time|replace('T', ' ') }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>爬取深度:</strong> {{ scan_info.scan_depth }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if scan_info.vulnerabilities %}
+        <div class="vuln-list">
+            <h3 class="mb-3">漏洞详情 ({{ scan_info.vulnerabilities|length }})</h3>
+            
+            {% for vuln in scan_info.vulnerabilities %}
+                <div class="card vuln-card {{ vuln.risk }}">
+                    <div class="vuln-header" onclick="toggleVuln(this)">
+                        <div>
+                            <span class="vuln-badge risk-{{ vuln.risk }}">{{ vuln.risk|upper }}</span>
+                            <strong class="ms-2">{{ vuln.type|replace('sql_injection', 'SQL注入')|replace('xss', 'XSS跨站脚本')|replace('csrf', 'CSRF跨站请求伪造') }}</strong>
+                        </div>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="vuln-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th style="width: 120px;">URL</th>
+                                <td><a href="{{ vuln.url }}" target="_blank">{{ vuln.url }}</a></td>
+                            </tr>
+                            <tr>
+                                <th>请求方法</th>
+                                <td>{{ vuln.method }}</td>
+                            </tr>
+                            <tr>
+                                <th>影响参数</th>
+                                <td>{{ vuln.param }}</td>
+                            </tr>
+                            <tr>
+                                <th>Payload</th>
+                                <td><code>{{ vuln.payload }}</code></td>
+                            </tr>
+                            <tr>
+                                <th>证据</th>
+                                <td>{{ vuln.evidence }}</td>
+                            </tr>
+                        </table>
+                        
+                        <div class="alert alert-info">
+                            <h6>修复建议</h6>
+                            {% if vuln.type == 'sql_injection' %}
+                                <ul class="mb-0">
+                                    <li>使用参数化查询（预处理语句）来替代直接拼接SQL语句</li>
+                                    <li>使用ORM框架，如SQLAlchemy、Hibernate等</li>
+                                    <li>对所有用户输入进行严格的验证和过滤</li>
+                                    <li>应用程序使用最小权限数据库账户</li>
+                                </ul>
+                            {% elif vuln.type == 'xss' %}
+                                <ul class="mb-0">
+                                    <li>对所有用户输入和输出进行HTML转义</li>
+                                    <li>实施内容安全策略(CSP)</li>
+                                    <li>使用现代框架的内置XSS保护功能</li>
+                                    <li>使用HttpOnly标志保护Cookies</li>
+                                </ul>
+                            {% elif vuln.type == 'csrf' %}
+                                <ul class="mb-0">
+                                    <li>在所有表单中使用CSRF令牌</li>
+                                    <li>实施同源检查(Origin/Referer)</li>
+                                    <li>对敏感操作使用用户交互确认</li>
+                                    <li>设置SameSite Cookie属性</li>
+                                </ul>
+                            {% else %}
+                                <ul class="mb-0">
+                                    <li>保持应用程序和依赖项的最新安全补丁</li>
+                                    <li>进行定期安全审计和代码审查</li>
+                                    <li>遵循安全开发生命周期(SDLC)最佳实践</li>
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span>恭喜！未发现明显的安全漏洞。但安全是持续的过程，建议定期进行安全扫描。</span>
+        </div>
+    {% endif %}
+{% endif %}
+
+<div class="text-center mt-5">
+    <a href="/scan" class="btn btn-outline-primary me-3">
+        <i class="bi bi-arrow-clockwise me-2"></i>新的扫描
+    </a>
+    <a href="/history" class="btn btn-outline-secondary">
+        <i class="bi bi-clock-history me-2"></i>查看扫描历史
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleVuln(element) {
+        const vulnBody = element.nextElementSibling;
+        vulnBody.classList.toggle('show');
+        
+        const icon = element.querySelector('.bi');
+        if (vulnBody.classList.contains('show')) {
+            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+        } else {
+            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+        }
+    }
+    
+    {% if scan_info.status == 'running' %}
+    // 如果扫描正在运行，每5秒刷新一次状态
+    function updateScanStatus() {
+        fetch('/api/scan_status/{{ scan_info.id }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'running') {
+                    // 如果扫描已完成或失败，刷新页面
+                    window.location.reload();
+                    return;
+                }
+                
+                // 更新进度条
+                const progressBar = document.querySelector('.progress-bar');
+                const progressText = document.querySelector('.progress-text');
+                if (progressBar && progressText) {
+                    progressBar.style.width = data.progress + '%';
+                    progressText.textContent = data.progress + '%';
+                }
+                
+                // 继续轮询
+                setTimeout(updateScanStatus, 5000);
+            })
+            .catch(error => {
+                console.error('获取扫描状态失败:', error);
+                setTimeout(updateScanStatus, 10000);  // 出错后延长轮询间隔
+            });
+    }
+    
+    // 启动轮询
+    setTimeout(updateScanStatus, 5000);
+    {% endif %}
+</script>
+{% endblock %} 

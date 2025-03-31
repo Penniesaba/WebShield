@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebShield 安全扫描报告 - https://www.news.cn/?lan=zh</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .header p {
+            color: #7f8c8d;
+            margin: 10px 0 0;
+        }
+        .summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4285f4;
+        }
+        .score-container {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .score {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            margin-right: 20px;
+        }
+        .score-metrics {
+            flex: 1;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .stat-box {
+            flex: 1;
+            min-width: 200px;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stat-box h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 16px;
+        }
+        .vuln-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        .vuln-table th, .vuln-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        .vuln-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .vuln-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .risk-high {
+            color: #d9534f;
+            background-color: #d9534f26;
+        }
+        .risk-medium {
+            color: #f0ad4e;
+            background-color: #f0ad4e26;
+        }
+        .risk-low {
+            color: #5bc0de;
+            background-color: #5bc0de26;
+        }
+        .score-critical {
+            background-color: #d9534f;
+        }
+        .score-high {
+            background-color: #f0ad4e;
+        }
+        .score-medium {
+            background-color: #5bc0de;
+        }
+        .score-low {
+            background-color: #5cb85c;
+        }
+        .score-safe {
+            background-color: #5cb85c;
+        }
+        .details {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #555;
+        }
+        .collapsible {
+            background-color: #f8f9fa;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: 0.4s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .active, .collapsible:hover {
+            background-color: #e9ecef;
+        }
+        .collapsible:after {
+            content: '+';
+            font-size: 20px;
+            color: #777;
+        }
+        .active:after {
+            content: '-';
+        }
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+        }
+        .recommendations {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+            border-left: 5px solid #5bc0de;
+        }
+        .recommendations ul {
+            padding-left: 20px;
+        }
+        .recommendations li {
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .score-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .score {
+                margin-bottom: 20px;
+            }
+            .stat-box {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WebShield 网站安全漏洞扫描报告</h1>
+            <p>扫描目标: https://www.news.cn/?lan=zh</p>
+            <p>扫描时间: 2025-03-31 21:38:05</p>
+            <p>扫描ID: dc4cea1a-ed53-4ea1-8b81-ee3306061774</p>
+        </div>
+
+        <div class="summary">
+            <h2>扫描结果摘要</h2>
+            <div class="score-container">
+                <div class="score score-low">
+                    24
+                </div>
+                <div class="score-metrics">
+                    <h3>安全风险等级: 低风险</h3>
+                    <p>总体风险评分: 24.0/100</p>
+                    <p>发现漏洞数量: 1</p>
+                    <p>高危漏洞: 1 | 中危漏洞: 0 | 低危漏洞: 0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <h3>SQL注入漏洞</h3>
+                <p>0 个</p>
+            </div>
+            <div class="stat-box">
+                <h3>XSS跨站脚本漏洞</h3>
+                <p>1 个</p>
+            </div>
+            <div class="stat-box">
+                <h3>CSRF跨站请求伪造漏洞</h3>
+                <p>0 个</p>
+            </div>
+            <div class="stat-box">
+                <h3>其他漏洞</h3>
+                <p>0 个</p>
+            </div>
+        </div>
+
+        <h2>漏洞详情</h2>
+
+        <button class="collapsible">
+            <span>1. XSS跨站脚本漏洞 - 高风险</span>
+            <span>https://www.news.cn/?lan=%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E</span>
+        </button>
+        <div class="content">
+            <table class="vuln-table">
+                <tr>
+                    <th>漏洞类型</th>
+                    <td>XSS跨站脚本漏洞</td>
+                </tr>
+                <tr>
+                    <th>风险等级</th>
+                    <td class="risk-high">高风险</td>
+                </tr>
+                <tr>
+                    <th>URL</th>
+                    <td>https://www.news.cn/?lan=%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E</td>
+                </tr>
+                <tr>
+                    <th>HTTP方法</th>
+                    <td>GET</td>
+                </tr>
+                <tr>
+                    <th>影响参数</th>
+                    <td>lan</td>
+                </tr>
+                <tr>
+                    <th>注入Payload</th>
+                    <td><script>alert('XSS')</script></td>
+                </tr>
+                <tr>
+                    <th>证据</th>
+                    <td>在响应中发现部分未过滤的脚本标签</td>
+                </tr>
+            </table>
+            
+            <h4>漏洞修复建议</h4>
+            <div class="recommendations">
+                
+                <ul>
+                    <li>对所有用户输入和输出进行HTML转义</li>
+                    <li>实施内容安全策略(CSP)</li>
+                    <li>使用现代框架的内置XSS保护功能</li>
+                    <li>使用HttpOnly标志保护Cookies</li>
+                    <li>对HTML属性和JavaScript内容使用适当的上下文转义</li>
+                    <li>过滤不必要的HTML标签和属性</li>
+                </ul>
+            
+            </div>
+        </div>
+
+        <div class="recommendations">
+            <h2>通用安全建议</h2>
+            <ul>
+                <li>始终保持Web应用框架和依赖库的最新版本</li>
+                <li>实施内容安全策略(CSP)以减少XSS攻击的风险</li>
+                <li>使用HTTPS确保传输安全</li>
+                <li>正确配置Web服务器，删除不必要的服务和默认页面</li>
+                <li>实施暴力破解防护措施，如账户锁定和CAPTCHA</li>
+                <li>定期进行安全审计和漏洞扫描</li>
+                <li>制定安全事件响应计划</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>WebShield 安全扫描报告 &copy; 2023</p>
+            <p>本报告仅供参考，不能替代专业的安全评估</p>
+        </div>
+    </div>
+
+    <script>
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+    }
+    </script>
+</body>
+</html>

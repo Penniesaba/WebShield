@@ -1,0 +1,17 @@
+{
+  "id": "dc4cea1a-ed53-4ea1-8b81-ee3306061774",
+  "target_url": "https://www.news.cn/?lan=zh",
+  "scan_depth": 2,
+  "scan_options": {
+    "sql_injection": true,
+    "xss": true,
+    "csrf": true
+  },
+  "status": "completed",
+  "start_time": "2025-03-31T21:36:02.026954",
+  "end_time": "2025-03-31T21:38:05.085912",
+  "progress": 100,
+  "urls_discovered": 3,
+  "vulnerabilities_found": 1,
+  "report_path": "/home/xiao/project/WebShield/instance/reports/dc4cea1a-ed53-4ea1-8b81-ee3306061774.html"
+}

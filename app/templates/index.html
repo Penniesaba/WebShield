@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}WebShield - Web应用漏洞扫描器{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        padding: 80px 0;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        border-radius: 15px;
+        margin-bottom: 50px;
+    }
+    .hero h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    .hero p {
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin: 0 auto 30px;
+        opacity: 0.9;
+    }
+    .usage-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+    }
+    .usage-card .card-header {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        border-bottom: 1px solid #e9ecef;
+        padding: 15px 20px;
+    }
+    .usage-steps {
+        padding: 20px;
+    }
+    .usage-step {
+        display: flex;
+        margin-bottom: 25px;
+        align-items: flex-start;
+    }
+    .usage-step:last-child {
+        margin-bottom: 0;
+    }
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #3498db;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    .step-content {
+        flex: 1;
+    }
+    .step-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero text-center">
+    <div class="container">
+        <h1>提升您网站的安全防护能力</h1>
+        <p>WebShield是一款功能强大的Web应用漏洞扫描工具，能够帮助您发现并修复SQL注入、XSS和CSRF等常见安全漏洞。</p>
+        <a href="/scan" class="btn btn-light btn-lg">开始扫描 <i class="bi bi-arrow-right"></i></a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card usage-card">
+        <div class="card-header">
+            <i class="bi bi-list-ol me-2"></i> 使用方法
+        </div>
+        <div class="usage-steps">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="usage-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">输入目标URL</div>
+                            <p>输入您想要扫描的网站URL，如https://example.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">选择扫描选项</div>
+                            <p>根据需要选择漏洞检测类型和扫描深度</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="usage-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">开始扫描</div>
+                            <p>点击开始按钮，系统将自动爬取和分析您的网站</p>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">查看报告</div>
+                            <p>扫描完成后，系统将生成详细的安全报告，包括发现的漏洞和修复建议</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}扫描历史 - WebShield{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 5px solid #3498db;
+    }
+    .history-table {
+        background-color: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .history-table th {
+        background-color: #f8f9fa;
+    }
+    .vuln-badge {
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    .risk-critical {
+        background-color: #ffe0e0;
+        color: #d9534f;
+    }
+    .risk-high {
+        background-color: #fff4e0;
+        color: #f0ad4e;
+    }
+    .risk-medium {
+        background-color: #e0f4ff;
+        color: #5bc0de;
+    }
+    .risk-low, .risk-safe {
+        background-color: #e0ffe0;
+        color: #5cb85c;
+    }
+    .status-running {
+        background-color: #e0f4ff;
+        color: #3498db;
+    }
+    .status-completed {
+        background-color: #e0ffe0;
+        color: #5cb85c;
+    }
+    .status-failed {
+        background-color: #ffe0e0;
+        color: #d9534f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-header">
+    <h2 class="mb-0">扫描历史记录</h2>
+    <p class="text-muted mt-2">查看之前执行的所有扫描结果</p>
+</div>
+
+{% if scan_results %}
+    <div class="history-table">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>目标URL</th>
+                    <th>扫描时间</th>
+                    <th>状态</th>
+                    <th>风险等级</th>
+                    <th>漏洞数量</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in scan_results %}
+                    <tr>
+                        <td>{{ scan.target_url }}</td>
+                        <td>{{ scan.start_time|replace('T', ' ') }}</td>
+                        <td>
+                            {% if scan.status == 'running' %}
+                                <span class="vuln-badge status-running">进行中</span>
+                            {% elif scan.status == 'completed' %}
+                                <span class="vuln-badge status-completed">已完成</span>
+                            {% else %}
+                                <span class="vuln-badge status-failed">失败</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if scan.status == 'completed' and scan.risk_level %}
+                                <span class="vuln-badge risk-{{ scan.risk_level|lower }}">
+                                    {% if scan.risk_level == 'Critical' %}
+                                        严重风险
+                                    {% elif scan.risk_level == 'High' %}
+                                        高风险
+                                    {% elif scan.risk_level == 'Medium' %}
+                                        中等风险
+                                    {% elif scan.risk_level == 'Low' %}
+                                        低风险
+                                    {% else %}
+                                        安全
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if scan.status == 'completed' and scan.total_vulnerabilities is defined %}
+                                {{ scan.total_vulnerabilities }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/scan_result/{{ scan.id }}" class="btn btn-sm btn-outline-primary">
+                                查看详情
+                            </a>
+                            {% if scan.status == 'completed' %}
+                                <a href="/reports/{{ scan.id }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <span>您还没有进行过扫描。</span>
+        <a href="/scan" class="alert-link">开始您的第一次扫描</a>
+    </div>
+{% endif %}
+
+<div class="text-center mt-5">
+    <a href="/scan" class="btn btn-primary">
+        <i class="bi bi-shield me-2"></i>开始新的扫描
+    </a>
+</div>
+{% endblock %} 
