@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}用户查询 - 漏洞测试应用{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>用户查询</h2>
+        
+        <div class="vulnerable-alert">
+            <strong>漏洞提示:</strong> 此页面存在SQL注入漏洞。尝试输入 <code>' OR '1'='1</code> 或其他SQL注入语句。
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/user" method="GET">
+                    <div class="input-group">
+                        <input type="text" name="username" class="form-control" placeholder="输入用户名" value="{{ username }}">
+                        <button class="btn btn-primary" type="submit">查询</button>
+                    </div>
+                    <div class="form-text">提示: 已有用户 "admin" 和 "user"</div>
+                </form>
+            </div>
+        </div>
+        
+        {% if result %}
+            <div class="card">
+                <div class="card-header">
+                    查询结果
+                </div>
+                <div class="card-body">
+                    <p><strong>用户ID:</strong> {{ result.id }}</p>
+                    <p><strong>用户名:</strong> {{ result.username }}</p>
+                    <p><strong>密码:</strong> {{ result.password }}</p>
+                </div>
+            </div>
+        {% elif username %}
+            <div class="alert alert-warning">
+                未找到匹配的用户: {{ username }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}登录 - 漏洞测试应用{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>用户登录</h2>
+        
+        <div class="vulnerable-alert">
+            <strong>漏洞提示:</strong> 此页面存在SQL注入漏洞。尝试在用户名输入 <code>admin' --</code> 可以绕过密码验证。
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
+                <form action="/login" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">登录</button>
+                </form>
+                
+                <div class="mt-3">
+                    <p class="mb-0"><small class="text-muted">提示: 正常账号 username: admin, password: admin123</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

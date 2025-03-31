@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}产品搜索 - 漏洞测试应用{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>产品搜索</h2>
+        
+        <div class="vulnerable-alert">
+            <strong>漏洞提示:</strong> 此页面存在SQL注入漏洞。尝试输入 <code>' UNION SELECT id, username, password, 1 FROM users --</code> 来获取用户表数据。
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/products" method="GET">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="搜索产品" value="{{ search }}">
+                        <button class="btn btn-primary" type="submit">搜索</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if results %}
+            <h3>搜索结果</h3>
+            <div class="row">
+                {% for product in results %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">¥{{ product.price }}</h6>
+                                <p class="card-text">{{ product.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elif search %}
+            <div class="alert alert-info">
+                未找到匹配 "{{ search }}" 的产品
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

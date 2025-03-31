@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}留言板 - 漏洞测试应用{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>留言板</h2>
+        
+        <div class="vulnerable-alert">
+            <strong>漏洞提示:</strong> 此页面存在存储型XSS漏洞。尝试发布包含恶意脚本的留言，如 <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                发表新留言
+            </div>
+            <div class="card-body">
+                <form action="/messages" method="POST">
+                    <div class="mb-3">
+                        <label for="content" class="form-label">留言内容</label>
+                        <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">发布留言</button>
+                </form>
+            </div>
+        </div>
+        
+        <h3>所有留言</h3>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p class="card-text">{{ message.content|safe }}</p>
+                        <p class="card-text"><small class="text-muted">留言ID: {{ message.id }} | 用户ID: {{ message.user_id }} | 时间: {{ message.created_at }}</small></p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                暂无留言，成为第一个留言的人吧！
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

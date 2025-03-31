@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 漏洞测试应用{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">⚠️ 警告: 安全漏洞测试网站</h4>
+            </div>
+            <div class="card-body">
+                <p>此网站专为WebShield Web应用漏洞扫描器测试而创建，故意包含以下安全漏洞:</p>
+                <ul>
+                    <li><strong>SQL注入漏洞</strong> - 在用户查询、产品搜索和登录页面</li>
+                    <li><strong>跨站脚本(XSS)漏洞</strong> - 在留言板(存储型)和搜索页面(反射型)</li>
+                    <li><strong>跨站请求伪造(CSRF)漏洞</strong> - 在个人资料页面的密码修改功能</li>
+                </ul>
+                <p>请使用WebShield扫描此网站，验证它是否能成功检测出上述漏洞。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">扫描测试指南</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>启动此漏洞测试应用</li>
+                    <li>启动WebShield扫描器</li>
+                    <li>在扫描器中输入测试URL: <code>http://localhost:5001</code></li>
+                    <li>选择要测试的漏洞类型(SQL注入、XSS、CSRF)</li>
+                    <li>设置适当的扫描深度(建议至少为2)</li>
+                    <li>开始扫描并查看结果</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">包含漏洞的页面</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="/user" class="list-group-item list-group-item-action">用户查询 - SQL注入漏洞</a>
+                    <a href="/products" class="list-group-item list-group-item-action">产品搜索 - SQL注入漏洞</a>
+                    <a href="/messages" class="list-group-item list-group-item-action">留言板 - 存储型XSS漏洞</a>
+                    <a href="/search" class="list-group-item list-group-item-action">搜索 - 反射型XSS漏洞</a>
+                    <a href="/profile" class="list-group-item list-group-item-action">个人资料 - CSRF漏洞</a>
+                    <a href="/login" class="list-group-item list-group-item-action">登录 - SQL注入漏洞</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
